@@ -1,0 +1,8 @@
+config.yaml
+data/resume.*
+!data/.gitkeep
+job_hunter.db
+.browser-profile/
+__pycache__/
+*.pyc
+.venv/

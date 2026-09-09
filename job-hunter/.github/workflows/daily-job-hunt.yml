@@ -1,0 +1,97 @@
+name: Daily Job Hunt
+
+on:
+  schedule:
+    # 07:30 UTC (~morning IST) and 19:30 UTC (~night IST) - adjust to your timezone.
+    - cron: "30 7 * * *"
+    - cron: "30 19 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  hunt:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: job-hunter
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write config from repo variable
+        env:
+          JOB_HUNTER_CONFIG: ${{ vars.JOB_HUNTER_CONFIG }}
+        run: |
+          if [ -z "$JOB_HUNTER_CONFIG" ]; then
+            echo "Set the JOB_HUNTER_CONFIG repository variable (contents of config.yaml) in Settings > Secrets and variables > Actions > Variables."
+            exit 1
+          fi
+          echo "$JOB_HUNTER_CONFIG" > config.yaml
+
+      - name: Fetch resume from secret (base64)
+        env:
+          RESUME_BASE64: ${{ secrets.RESUME_BASE64 }}
+        run: |
+          mkdir -p data
+          if [ -n "$RESUME_BASE64" ]; then
+            echo "$RESUME_BASE64" | base64 -d > data/resume.pdf
+          else
+            echo "No RESUME_BASE64 secret set - skipping resume decode."
+          fi
+
+      - name: Run job hunt
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
+          GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_CLIENT_SECRET }}
+          GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
+        run: python -m job_hunter.main --config config.yaml
+
+      - name: Open/refresh a tracking issue with the latest report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('job-hunter/reports/latest.md', 'utf8');
+            const title = 'Daily Job Hunt Report';
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'job-hunt-report',
+            });
+
+            if (issues.data.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues.data[0].number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['job-hunt-report'],
+              });
+            }
+
+      - name: Commit reports and database
+        run: |
+          git config user.name "job-hunter-bot"
+          git config user.email "actions@github.com"
+          git add reports job_hunter.db
+          git diff --cached --quiet || git commit -m "Daily job hunt report [skip ci]"
+          git push
