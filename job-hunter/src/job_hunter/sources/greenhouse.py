@@ -8,7 +8,7 @@ using the board token from their careers URL:
 """
 import requests
 
-from .base import JobPosting
+from .base import JobPosting, keyword_matches
 
 API_URL = "https://boards-api.greenhouse.io/v1/boards/{board}/jobs?content=true"
 
@@ -27,8 +27,8 @@ def fetch(board_tokens: list[str], query_keywords: list[str] | None = None) -> l
             content = job.get("content", "") or ""
 
             if query_keywords:
-                haystack = f"{title} {content}".lower()
-                if not any(kw.lower() in haystack for kw in query_keywords):
+                haystack = f"{title} {content}"
+                if not keyword_matches(query_keywords, haystack):
                     continue
 
             location = (job.get("location") or {}).get("name", "")

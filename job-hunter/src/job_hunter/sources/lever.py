@@ -3,7 +3,7 @@ Configure company slugs (from https://jobs.lever.co/<slug>) in
 config.yaml under `lever_companies`."""
 import requests
 
-from .base import JobPosting
+from .base import JobPosting, keyword_matches
 
 API_URL = "https://api.lever.co/v0/postings/{company}?mode=json"
 
@@ -22,8 +22,8 @@ def fetch(companies: list[str], query_keywords: list[str] | None = None) -> list
             description = job.get("descriptionPlain", "") or job.get("description", "") or ""
 
             if query_keywords:
-                haystack = f"{title} {description}".lower()
-                if not any(kw.lower() in haystack for kw in query_keywords):
+                haystack = f"{title} {description}"
+                if not keyword_matches(query_keywords, haystack):
                     continue
 
             categories = job.get("categories", {}) or {}
