@@ -1,0 +1,31 @@
+# Copy this file to config.yaml and fill in your details.
+# config.yaml is gitignored - never commit your real resume path or PII.
+
+resume_path: "data/resume.pdf"
+
+# Keywords used to filter postings across all sources.
+search_keywords:
+  - "software engineer"
+  - "backend developer"
+  - "python developer"
+
+search_location: "Bangalore, India"
+
+# Company board tokens for sources with public APIs.
+# Find these from each company's careers URL.
+greenhouse_boards: []       # e.g. ["stripe", "airbnb"]
+lever_companies: []         # e.g. ["netflix"]
+
+# Minimum skill-overlap score (0-1) for a posting to be reported.
+min_match_score: 0.10
+
+# Used by apply_assist.py (local only) to pre-fill application forms.
+applicant_profile:
+  full_name: ""
+  first_name: ""
+  last_name: ""
+  email: ""
+  phone: ""
+  linkedin_url: ""
+  portfolio_url: ""
+  resume_path: "data/resume.pdf"
