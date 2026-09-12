@@ -27,4 +27,11 @@ SKILLS_TAXONOMY = [
     # Other domains
     "project management", "product management", "business analysis",
     "digital marketing", "seo", "content writing", "ui/ux", "ux design",
+    # Auth / realtime / BaaS
+    "jwt", "oauth", "supabase", "firebase", "socket.io", "websockets",
+    "vercel", "cloudinary", "npm", "vs code",
+    # CS fundamentals
+    "dbms", "oops", "data structures", "algorithms", "system design",
+    # IoT / embedded
+    "iot", "esp32", "arduino", "rfid", "raspberry pi",
 ]
