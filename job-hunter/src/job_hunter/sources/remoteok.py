@@ -2,7 +2,7 @@
 No authentication required; this is RemoteOK's documented public feed."""
 import requests
 
-from .base import JobPosting
+from .base import JobPosting, keyword_matches
 
 API_URL = "https://remoteok.com/api"
 HEADERS = {"User-Agent": "job-hunter-assistant/1.0 (personal job search tool)"}
@@ -23,8 +23,8 @@ def fetch(query_keywords: list[str] | None = None, limit: int = 50) -> list[JobP
         tags = item.get("tags", []) or []
 
         if query_keywords:
-            haystack = f"{title} {description} {' '.join(tags)}".lower()
-            if not any(kw.lower() in haystack for kw in query_keywords):
+            haystack = f"{title} {description} {' '.join(tags)}"
+            if not keyword_matches(query_keywords, haystack):
                 continue
 
         postings.append(
