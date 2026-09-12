@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: job-hunter-assistant
+    runtime: python
+    rootDir: job-hunter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn webapp.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SERPAPI_KEY
+        sync: false
+    plan: free
