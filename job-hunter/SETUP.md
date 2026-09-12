@@ -109,6 +109,40 @@ ways to act on them:
   window that opens — it uses a persistent profile (`.browser-profile/`)
   so you stay logged in on future runs.
 
+## 6. Deploy the live web app on Render
+
+The `webapp/` folder is a small FastAPI app with a form: upload your resume,
+enter job role/location/companies/company type, and get ranked live matches
+back in your browser — no GitHub secrets or cron needed for this mode.
+
+1. Go to https://dashboard.render.com → **New → Web Service**.
+2. Connect your GitHub account and pick this repository
+   (`skills-introduction-to-github`).
+3. Since the app lives in a subfolder, set these manually (Render's
+   Blueprint auto-detection expects `render.yaml` at the repo root, and
+   this repo has other content there too, so manual setup is more
+   reliable):
+   - **Root Directory:** `job-hunter`
+   - **Runtime:** Python 3
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `uvicorn webapp.main:app --host 0.0.0.0 --port $PORT`
+   - **Plan:** Free is fine to start.
+4. (Optional) Add an environment variable `SERPAPI_KEY` if you want Google
+   Jobs results included.
+5. Click **Create Web Service**. Render builds and gives you a public URL
+   like `https://job-hunter-assistant.onrender.com`.
+6. Open that URL, upload your resume, fill in the form, and submit — it
+   calls live RemoteOK/Greenhouse/Lever/Google Jobs feeds and shows ranked
+   results directly in the page. Nothing is stored server-side; each
+   search is a one-off request.
+
+Note: Render's free plan spins the service down after inactivity, so the
+first request after a while takes ~30-60 seconds to wake up — that's
+normal, not a bug.
+
+`render.yaml` in this folder documents the same settings as Infrastructure-
+as-Code, in case you prefer the Blueprint flow with a custom blueprint path.
+
 ## Notes on scope and limits
 
 - `min_match_score` in `config.yaml` controls how loose/strict matching is.
